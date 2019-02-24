@@ -38,21 +38,12 @@
         }
       },
       {
-        "package": "Fluent",
-        "repositoryURL": "https://github.com/vapor/fluent.git",
+        "package": "ExtendedError",
+        "repositoryURL": "https://github.com/Letterer/ExtendedError.git",
         "state": {
           "branch": null,
-          "revision": "00b81a9362549facb8e2ac93b17d2a78599fce3b",
-          "version": "3.1.2"
-        }
-      },
-      {
-        "package": "FluentSQLite",
-        "repositoryURL": "https://github.com/vapor/fluent-sqlite.git",
-        "state": {
-          "branch": null,
-          "revision": "c32f5bda84bf4ea691d19afe183d40044f579e11",
-          "version": "3.0.0"
+          "revision": "e1484173eda7107f4900b18d63bb0c5a642bb0cb",
+          "version": "1.0.0"
         }
       },
       {
@@ -62,6 +53,15 @@
           "branch": null,
           "revision": "b57005e0de30ba36372ac41bfce1ac12b2bc3272",
           "version": "3.1.8"
+        }
+      },
+      {
+        "package": "JWT",
+        "repositoryURL": "https://github.com/vapor/jwt.git",
+        "state": {
+          "branch": null,
+          "revision": "2e225c722bf26407c1c4bd11d341e48759f46095",
+          "version": "3.0.0"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/vapor/routing.git",
         "state": {
           "branch": null,
-          "revision": "3219e328491b0853b8554c5a694add344d2c6cfb",
-          "version": "3.0.1"
+          "revision": "626190ddd2bd9f967743b60ba6adaf90bbd2651c",
+          "version": "3.0.2"
         }
       },
       {
@@ -89,24 +89,6 @@
           "branch": null,
           "revision": "4907311d7d7f609365982fa302b8b17ffdeb46da",
           "version": "1.0.1"
-        }
-      },
-      {
-        "package": "SQL",
-        "repositoryURL": "https://github.com/vapor/sql.git",
-        "state": {
-          "branch": null,
-          "revision": "f77bcae7c95150cdab62095e7bf321ed8c7551bd",
-          "version": "2.3.0"
-        }
-      },
-      {
-        "package": "SQLite",
-        "repositoryURL": "https://github.com/vapor/sqlite.git",
-        "state": {
-          "branch": null,
-          "revision": "4f5e173abafb0bb185608d28fccec3df166c689a",
-          "version": "3.2.0"
         }
       },
       {
