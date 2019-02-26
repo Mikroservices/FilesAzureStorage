@@ -7,8 +7,58 @@ final class AzureStorageService: ServiceType {
         return AzureStorageService()
     }
 
+    /// Creates file in Azure storage (as block blob).
+    ///
+    /// - Parameter inContainer: Container name.
+    /// - Parameter content: File content.
+    /// - Parameter fileName: Name of file.
+    /// - Parameter withMetadata: Additional metadata.
+    /// - Parameter inRequest: Current request scope.
+    /// - Returns: Response status from external provider.
+    public func createFile(inContainer containerName: String,
+                           content: Data,
+                           fileName: String,
+                           withMetadata metadata: [String:String]? = nil,
+                           inRequest request: Request) throws -> Future<HTTPResponseStatus> {
+
+        return try self.isContainerExists(withName: containerName, inRequest: request).flatMap(to: HTTPStatus.self) { isContainerExists in
+
+            if (!isContainerExists) {
+                return try self.createContainer(withName: containerName, inRequest: request)
+            }
+
+            return Future.map(on: request) { return HTTPResponseStatus.ok }
+        }.flatMap(to: HTTPResponseStatus.self) { containerResult in
+
+            if containerResult.isSuccess() {
+                return try self.createFileInternal(inContainer: containerName,
+                                                   content: content,
+                                                   fileName: fileName,
+                                                   withMetadata: metadata,
+                                                   inRequest: request)
+            }
+
+            return Future.map(on: request) { return containerResult }
+        }
+    }
+
+    /// Returns list of files from container.
+    ///
+    /// - Parameter fromContainer: Container name.
+    /// - Parameter inRequest: Current request scope.
+    /// - Returns: List of files.
+    public func getFiles(fromContainer containerName: String, inRequest request: Request) -> [FileDto] {
+        // GET "https://myaccount.blob.core.windows.net/mycontainer?restype=container&comp=list"
+        // Authorization: SharedKey lettererdev:YhuFJjN4fAR8/AmBrqBz7MG2uFinQ4rkh4dscbj598g=
+        // x-ms-date: Sun, 25 Sep 2011 22:50:32 GMT
+        // x-ms-version: 2015-02-21
+
+        return []
+    }
+
     /// Creating new conatiner in Azure Storage.
     ///
+    /// More information: https://docs.microsoft.com/en-us/rest/api/storageservices/create-container
     /// This method send the request similar to below:
     ///
     /// PUT "https://lettererdev.blob.core.windows.net/mycontainer?restype=container"
@@ -19,11 +69,12 @@ final class AzureStorageService: ServiceType {
     /// - Parameter withName: Container name.
     /// - Parameter inRequest: Current request scope.
     /// - Returns: Response status from external provider.
-    public func createContainer(withName name: String, inRequest request: Request) throws -> Future<HTTPResponseStatus> {
+    private func createContainer(withName name: String, inRequest request: Request) throws -> Future<HTTPResponseStatus> {
 
         let settingsStorage = try request.make(SettingsStorage.self)
         let azureSignatureService = try request.make(AzureSignatureService.self)
         let accountName = settingsStorage.azureStorageAccountName
+        let client = try request.client()
 
         var headers = HTTPHeaders()
         headers.add(name: .xMsVersion, value: "2011-08-18")
@@ -33,16 +84,20 @@ final class AzureStorageService: ServiceType {
         let signature = try azureSignatureService.signature(accountName: accountName, method: .PUT, uri: uri, headers: headers)
         headers.add(name: .authorization, value: "SharedKey lettererdev:\(signature)")
 
-        let client = try request.client()
-        return client.put("https://\(accountName).blob.core.windows.net/\(uri)", headers: headers)
-        .map(to: HTTPResponseStatus.self) { httpResponse in
-            print(httpResponse.content)
+        return client.put("https://\(accountName).blob.core.windows.net/\(uri)", headers: headers).map(to: HTTPStatus.self) { httpResponse in
+
+            if !httpResponse.http.status.isSuccess() {
+                let logger = try request.make(Logger.self)
+                logger.error(httpResponse.debugDescription)
+            }
+
             return httpResponse.http.status
         }
     }
 
     /// Checking if container exists.
     ///
+    /// More information: https://docs.microsoft.com/en-us/rest/api/storageservices/get-container-properties
     /// This method send the request similar to below:
     ///
     /// GET "https://lettererdev.blob.core.windows.net/mycontainer?restype=container"
@@ -53,7 +108,7 @@ final class AzureStorageService: ServiceType {
     /// - Parameter withName: Container name.
     /// - Parameter inRequest: Current request scope.
     /// - Returns: True if container exists.
-    public func isContainerExists(withName name: String, inRequest request: Request) throws -> Future<Bool> {
+    private func isContainerExists(withName name: String, inRequest request: Request) throws -> Future<Bool> {
 
         let settingsStorage = try request.make(SettingsStorage.self)
         let azureSignatureService = try request.make(AzureSignatureService.self)
@@ -68,27 +123,82 @@ final class AzureStorageService: ServiceType {
         headers.add(name: .authorization, value: "SharedKey lettererdev:\(signature)")
 
         let client = try request.client()
-        return client.get("https://\(accountName).blob.core.windows.net/\(uri)" , headers: headers)
-            .map(to: Bool.self) { httpResponse in
-                print(httpResponse.content)
-                return httpResponse.http.status == HTTPResponseStatus.ok
+        return client.get("https://\(accountName).blob.core.windows.net/\(uri)" , headers: headers).map(to: Bool.self) { httpResponse in
+
+            if !httpResponse.http.status.isSuccess() {
+                let logger = try request.make(Logger.self)
+                logger.error(httpResponse.debugDescription)
+            }
+
+            return httpResponse.http.status == HTTPResponseStatus.ok
         }
     }
 
-    // PUT "https://lettererdev.blob.core.windows.net/mycontainer/myblob"
-    // Authorization: SharedKey lettererdev:YhuFJjN4fAR8/AmBrqBz7MG2uFinQ4rkh4dscbj598g=
-    // Content-Length: 11
-    // Content-Type: text/plain; charset=UTF-8
-    // x-ms-version: 2015-02-21
-    // x-ms-date: Sun, 25 Sep 2011 22:50:32 GMT
-    // x-ms-blob-type: BlockBlob
-    // x-ms-meta-key1: value1
-    // x-ms-meta-key2: value2
-    public func createFile(inContainer containerName: String, withName name: String, content: Data) {
+    /// Creating new file in Azure storage.
+    ///
+    /// More information: https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob
+    /// This method send the request similar to below:
+    ///
+    /// PUT "https://lettererdev.blob.core.windows.net/mycontainer/myblob"
+    /// Authorization: SharedKey lettererdev:YhuFJjN4fAR8/AmBrqBz7MG2uFinQ4rkh4dscbj598g=
+    /// Content-Length: 11
+    /// Content-Type: text/plain; charset=UTF-8
+    /// x-ms-version: 2015-02-21
+    /// x-ms-date: Sun, 25 Sep 2011 22:50:32 GMT
+    /// x-ms-blob-type: BlockBlob
+    /// x-ms-meta-key1: value1
+    /// x-ms-meta-key2: value2
+    ///
+    /// Content
+    ///
+    /// - Parameter inContainer: Container name.
+    /// - Parameter content: File content.
+    /// - Parameter fileName: Name of file.
+    /// - Parameter withMetadata: Additional metadata.
+    /// - Parameter inRequest: Current request scope.
+    /// - Returns: Response status from external provider.
+    private func createFileInternal(inContainer containerName: String,
+                                    content: Data,
+                                    fileName: String,
+                                    withMetadata metadata: [String:String]? = nil,
+                                    inRequest request: Request) throws -> Future<HTTPResponseStatus> {
 
+        let settingsStorage = try request.make(SettingsStorage.self)
+        let azureSignatureService = try request.make(AzureSignatureService.self)
+        let accountName = settingsStorage.azureStorageAccountName
+
+        var headers = HTTPHeaders()
+        headers.add(name: .xMsVersion, value: "2015-02-21")
+        headers.add(name: .xMsDate, value: Date().rfc1123US)
+        headers.add(name: .xMsBlobType, value: "BlockBlob")
+        headers.add(name: .contentLength, value: "\(content.count)")
+        headers.add(name: .contentType, value: MediaType.binary.serialize())
+
+        if let additionalMetaData = metadata {
+            for data in additionalMetaData {
+                headers.add(name: "x-ms-meta-\(data.key)", value: data.value)
+            }
+        }
+
+        let uri = "\(containerName)/\(fileName)"
+        let signature = try azureSignatureService.signature(accountName: accountName, method: .PUT, uri: uri, headers: headers)
+        headers.add(name: .authorization, value: "SharedKey lettererdev:\(signature)")
+
+        let client = try request.client()
+        return client.put("https://\(accountName).blob.core.windows.net/\(uri)" , headers: headers) { httpRequest in
+            try httpRequest.content.encode(content, as: .binary)
+        }.map(to: HTTPResponseStatus.self) { httpResponse in
+
+            if !httpResponse.http.status.isSuccess() {
+                let logger = try request.make(Logger.self)
+                logger.error(httpResponse.debugDescription)
+            }
+
+            return httpResponse.http.status
+        }
     }
 
-    public func getFiles(fromContainer containerName: String) -> [String] {
+    private func getFilesInternal(fromContainer containerName: String) -> [String] {
         // GET "https://myaccount.blob.core.windows.net/mycontainer?restype=container&comp=list"
         // Authorization: SharedKey lettererdev:YhuFJjN4fAR8/AmBrqBz7MG2uFinQ4rkh4dscbj598g=
         // x-ms-date: Sun, 25 Sep 2011 22:50:32 GMT

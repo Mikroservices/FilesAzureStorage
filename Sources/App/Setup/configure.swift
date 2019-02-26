@@ -1,6 +1,38 @@
 import Vapor
 import ExtendedError
 
+public final class BinaryEncoder: DataEncoder, HTTPMessageEncoder {
+    /// The specific plaintext `MediaType` to use.
+    private let contentType: MediaType
+
+    /// Creates a new `PlaintextEncoder`.
+    ///
+    /// - parameters:
+    ///     - contentType: Plaintext `MediaType` to use.
+    ///                    Usually `.plainText` or `.html`.
+    public init(_ contentType: MediaType = .binary) {
+        self.contentType = contentType
+    }
+
+    /// See `DataEncoder`.
+    public func encode<E>(_ encodable: E) throws -> Data where E : Encodable {
+        let data =  encodable as! Data
+
+         // var preparedBody = "\n".convertToData()
+         // preparedBody.append(data)
+
+        return data
+    }
+
+    /// See `HTTPMessageEncoder`.
+    public func encode<E, M>(_ encodable: E, to message: inout M, on worker: Worker) throws
+        where E: Encodable, M: HTTPMessage
+    {
+        message.contentType = self.contentType
+        message.body = try HTTPBody(data: encode(encodable))
+    }
+}
+
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
 
@@ -15,6 +47,10 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     /// Register middleware.
     registerMiddlewares(services: &services)
+
+    var contentConfig = ContentConfig.default()
+    contentConfig.use(encoder: BinaryEncoder(), for: .binary)
+    services.register(contentConfig)
 }
 
 private func registerSettingsStorage(services: inout Services) throws {

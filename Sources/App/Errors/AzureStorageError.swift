@@ -3,6 +3,7 @@ import ExtendedError
 
 enum AzureStorageError: String, Error {
     case invalidUri
+    case fileNotCreated
 }
 
 extension AzureStorageError: TerminateError {
@@ -13,6 +14,7 @@ extension AzureStorageError: TerminateError {
     var reason: String {
         switch self {
         case .invalidUri: return "Invalid URI was specified."
+        case .fileNotCreated: return "File wasn't created"
         }
     }
 

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "FilesAzureStorage::App"
-               BuildableName = "App.framework"
-               BlueprintName = "App"
+               BlueprintIdentifier = "FilesAzureStorage::Run"
+               BuildableName = "Run"
+               BlueprintName = "Run"
                ReferencedContainer = "container:FilesAzureStorage.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "FilesAzureStorage::Run"
-               BuildableName = "Run"
-               BlueprintName = "Run"
+               BlueprintIdentifier = "FilesAzureStorage::App"
+               BuildableName = "App.framework"
+               BlueprintName = "App"
                ReferencedContainer = "container:FilesAzureStorage.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -69,9 +69,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "FilesAzureStorage::App"
-            BuildableName = "App.framework"
-            BlueprintName = "App"
+            BlueprintIdentifier = "FilesAzureStorage::Run"
+            BuildableName = "Run"
+            BlueprintName = "Run"
             ReferencedContainer = "container:FilesAzureStorage.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

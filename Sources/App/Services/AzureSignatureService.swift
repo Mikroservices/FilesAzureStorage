@@ -2,6 +2,8 @@ import Foundation
 import Vapor
 import Crypto
 
+/// Class to sign request to Azure.
+/// Documentation: https://docs.microsoft.com/pl-pl/rest/api/storageservices/authorize-with-shared-key
 final class AzureSignatureService: ServiceType {
 
     static func makeService(for container: Container) throws -> AzureSignatureService {
@@ -17,7 +19,6 @@ final class AzureSignatureService: ServiceType {
     /// - Returns: String to sign.
     func signature(accountName: String, method: HTTPMethod, uri: String, headers: HTTPHeaders) throws -> String {
         let message = try signableString(accountName: accountName, method: method, uri: uri, headers: headers)
-        print(message)
 
         let secret = "/KU4W86aVIzseUTP4Uw3yDdX5vtRfkB7Q3bt15dpH0FjNmL+eG2nhJ/FODtavAI3zgfsITQR3u0wA1OS0yf2YQ=="
         let secretBase64 = Data(base64Encoded: secret, options: .ignoreUnknownCharacters)
@@ -42,11 +43,14 @@ final class AzureSignatureService: ServiceType {
         let canonicalizedHeaders = self.canonicalizedHeaders(headers: headers)
         let canonicalizedResource = try self.canonicalizedResource(accountName: accountName, uri: uri)
 
+        let version = headers.valueFor(name: .xMsVersion, defaultValue: "2014-02-14")
+        let defaultContentLenght = version.compare("2014-02-13") == .orderedDescending ? "" : "0"
+
         let array : [String] = [
             method.string.uppercased(),
             headers.valueFor(name: .contentEncoding, defaultValue: ""),
             headers.valueFor(name: .contentLanguage, defaultValue: ""),
-            headers.valueFor(name: .contentLength, defaultValue: "0"),
+            headers.valueFor(name: .contentLength, defaultValue: defaultContentLenght),
             headers.valueFor(name: .contentMD5, defaultValue: ""),
             headers.valueFor(name: .contentType, defaultValue: ""),
             headers.valueFor(name: .date, defaultValue: ""),
@@ -80,10 +84,10 @@ final class AzureSignatureService: ServiceType {
 
         let sorted = microsoftHeaders.sorted { (left, right) -> Bool in
             left.key < right.key
-            }.map { header -> String in
-                return "\(header.key):\(header.value)"
-            }.map { header -> String in
-                return header.replacingOccurrences(of: "\\s+", with: " ")
+        }.map { header -> String in
+            return "\(header.key.lowercased()):\(header.value)"
+        }.map { header -> String in
+            return header.replacingOccurrences(of: "\\s+", with: " ")
         }
 
         return sorted.joined(separator: "\n")

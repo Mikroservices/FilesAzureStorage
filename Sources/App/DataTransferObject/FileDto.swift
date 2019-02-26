@@ -2,10 +2,14 @@ import Vapor
 
 final class FileDto {
 
-    var name: String
+    let id: String
+    let name: String
+    let size: Int
 
-    init(name: String) {
+    init(id: String, name: String, size: Int) {
+        self.id = id
         self.name = name
+        self.size = size
     }
 }
 
