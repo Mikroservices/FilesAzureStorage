@@ -1,6 +1,9 @@
 
 # Created by https://www.gitignore.io/api/macos,xcode,linux,vapor,swift,swiftpm,windows,visualstudio,visualstudiocode,swiftpackagemanager
 
+### Xcode project files ###
+FilesAzureStorage.xcodeproj
+
 ### Linux ###
 *~
 
