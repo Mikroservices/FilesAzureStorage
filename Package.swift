@@ -10,14 +10,14 @@ let package = Package(
         // 🔏 JSON Web Token signing and verification (HMAC, RSA).
         .package(url: "https://github.com/vapor/jwt.git", from: "3.0.0"),
 
-        // 🏞 Parses and serializes multipart-encoded data with Codable support.
-        .package(url: "https://github.com/vapor/multipart.git", from: "3.0.3"),
+        // 📄 XMLEncoder & XMLDecoder using Codable protocol in Swift 4.
+        .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.3.1"),
 
-        // 🐞 Custom error middleware for Vapor
+        // 🐞 Custom error middleware for Vapor.
         .package(url: "https://github.com/Letterer/ExtendedError.git", from: "1.0.0")
     ],
     targets: [
-        .target(name: "App", dependencies: ["Vapor", "JWT", "ExtendedError"]),
+        .target(name: "App", dependencies: ["Vapor", "JWT", "XMLCoder", "ExtendedError"]),
         .target(name: "Run", dependencies: ["App"]),
         .testTarget(name: "AppTests", dependencies: ["App"])
     ]
