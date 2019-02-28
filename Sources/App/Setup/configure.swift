@@ -25,7 +25,7 @@ private func registerSettingsStorage(services: inout Services) throws {
     guard let azureStorageSecretKey = Environment.get("LETTERER_AZURE_STORAGE_SECRET_KEY") else { throw Abort(.internalServerError) }
     guard let azureStorageAccountName = Environment.get("LETTERER_AZURE_STORAGE_ACCOUNT_NAME") else { throw Abort(.internalServerError) }
 
-    services.register { container -> SettingsStorage in
+    services.register { _ -> SettingsStorage in
         let publicKeyWithNewLines = publicKey.replacingOccurrences(of: "<br>", with: "\n")
         return SettingsStorage(publicKey: publicKeyWithNewLines, azureStorageSecretKey: azureStorageSecretKey, azureStorageAccountName: azureStorageAccountName)
     }
@@ -57,7 +57,7 @@ private func registerMiddlewares(services: inout Services) {
     // Catches errors and converts to HTTP response
     services.register(CustomErrorMiddleware.self)
     middlewares.use(CustomErrorMiddleware.self)
-    
+
     services.register(middlewares)
 }
 

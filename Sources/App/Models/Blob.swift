@@ -12,9 +12,9 @@ public final class Blob {
     }
 
     enum CodingKeys: String, CodingKey {
-        case name = "name"
-        case properties = "properties"
-        case metadata = "metadata"
+        case name
+        case properties
+        case metadata
     }
 }
 

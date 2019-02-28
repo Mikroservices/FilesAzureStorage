@@ -4,7 +4,7 @@ import Vapor
 public func routes(_ router: Router) throws {
 
     // Basic response.
-    router.get { req in
+    router.get { _ in
         return "Service is up and running!"
     }
 

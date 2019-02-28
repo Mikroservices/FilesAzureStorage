@@ -20,12 +20,12 @@ final class AzureStorageService: ServiceType {
                            content: Data,
                            fileName: String,
                            contentType: MediaType?,
-                           withMetadata metadata: [String:String]? = nil,
+                           withMetadata metadata: [String: String]? = nil,
                            inRequest request: Request) throws -> Future<HTTPResponseStatus> {
 
         return try self.isContainerExists(withName: containerName, inRequest: request).flatMap(to: HTTPStatus.self) { isContainerExists in
 
-            if (!isContainerExists) {
+            if !isContainerExists {
                 return try self.createContainer(withName: containerName, inRequest: request)
             }
 
@@ -51,7 +51,7 @@ final class AzureStorageService: ServiceType {
     /// - Parameter inRequest: Current request scope.
     /// - Returns: List of files.
     public func getFiles(fromContainer containerName: String, inRequest request: Request) throws -> Future<[FileDto]> {
-        return try self.getFilesInternal(fromContainer:containerName, inRequest:request)
+        return try self.getFilesInternal(fromContainer: containerName, inRequest: request)
     }
 
     /// Returns list of files from container.
@@ -61,7 +61,7 @@ final class AzureStorageService: ServiceType {
     /// - Parameter inRequest: Current request scope.
     /// - Returns: List of files.
     public func getFile(fromContainer containerName: String, withFileName fileName: String, inRequest request: Request) throws -> Future<FileDto?> {
-        return try self.getFilesInternal(fromContainer:containerName, withPrefix: fileName, inRequest:request).map(to: FileDto?.self) { filesDto in
+        return try self.getFilesInternal(fromContainer: containerName, withPrefix: fileName, inRequest: request).map(to: FileDto?.self) { filesDto in
             return filesDto.first
         }
     }
@@ -134,7 +134,7 @@ final class AzureStorageService: ServiceType {
         headers.add(name: .authorization, value: "SharedKey lettererdev:\(signature)")
 
         let client = try request.client()
-        return client.get("https://\(accountName).blob.core.windows.net/\(uri)" , headers: headers).map(to: Bool.self) { httpResponse in
+        return client.get("https://\(accountName).blob.core.windows.net/\(uri)", headers: headers).map(to: Bool.self) { httpResponse in
 
             if !httpResponse.http.status.isSuccess() {
                 let logger = try request.make(Logger.self)
@@ -173,7 +173,7 @@ final class AzureStorageService: ServiceType {
                                     content: Data,
                                     fileName: String,
                                     contentType: MediaType?,
-                                    withMetadata metadata: [String:String]? = nil,
+                                    withMetadata metadata: [String: String]? = nil,
                                     inRequest request: Request) throws -> Future<HTTPResponseStatus> {
 
         let settingsStorage = try request.make(SettingsStorage.self)
@@ -199,7 +199,7 @@ final class AzureStorageService: ServiceType {
         headers.add(name: .authorization, value: "SharedKey lettererdev:\(signature)")
 
         let client = try request.client()
-        return client.put("https://\(accountName).blob.core.windows.net/\(uri)" , headers: headers) { httpRequest in
+        return client.put("https://\(accountName).blob.core.windows.net/\(uri)", headers: headers) { httpRequest in
             try httpRequest.content.encode(content, as: .binary)
         }.map(to: HTTPResponseStatus.self) { httpResponse in
 
@@ -240,7 +240,7 @@ final class AzureStorageService: ServiceType {
 
         var uri = "\(containerName)?restype=container&comp=list&include=metadata"
         if let prefixUnboxed = prefix {
-            uri = uri + "&prefix=\(prefixUnboxed)"
+            uri += "&prefix=\(prefixUnboxed)"
         }
 
         let signature = try azureSignatureService.signature(accountName: accountName, method: .GET, uri: uri, headers: headers)

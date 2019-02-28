@@ -8,7 +8,7 @@ public final class Metadata {
     }
 
     enum CodingKeys: String, CodingKey {
-        case fileName = "fileName"
+        case fileName
     }
 }
 

@@ -33,7 +33,10 @@ final class FilesController: RouteCollection {
 
         let userNameNormalized = userNameFromToken.lowercased()
         let azureStorageService = try request.make(AzureStorageService.self)
-        return try azureStorageService.getFile(fromContainer: userNameNormalized, withFileName: fileName, inRequest: request).flatMap(to: Response.self) { fileDto in
+
+        return try azureStorageService.getFile(fromContainer: userNameNormalized,
+                                               withFileName: fileName,
+                                               inRequest: request).flatMap(to: Response.self) { fileDto in
 
             guard let fileDtoUnboxed = fileDto else {
                 return Future.map(on: request) { return Response(http: HTTPResponse(status: .notFound), using: request) }

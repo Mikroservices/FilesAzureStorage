@@ -8,7 +8,7 @@ public final class BinaryEncoder: DataEncoder, HTTPMessageEncoder {
     }
 
     /// See `DataEncoder`.
-    public func encode<E>(_ encodable: E) throws -> Data where E : Encodable {
+    public func encode<E>(_ encodable: E) throws -> Data where E: Encodable {
         if let data = encodable as? Data {
             return data
         }
@@ -17,9 +17,7 @@ public final class BinaryEncoder: DataEncoder, HTTPMessageEncoder {
     }
 
     /// See `HTTPMessageEncoder`.
-    public func encode<E, M>(_ encodable: E, to message: inout M, on worker: Worker) throws
-        where E: Encodable, M: HTTPMessage
-    {
+    public func encode<E, M>(_ encodable: E, to message: inout M, on worker: Worker) throws where E: Encodable, M: HTTPMessage {
         message.contentType = self.contentType
         message.body = try HTTPBody(data: encode(encodable))
     }

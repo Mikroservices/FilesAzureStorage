@@ -46,7 +46,7 @@ final class AzureSignatureService: ServiceType {
         let version = headers.valueFor(name: .xMsVersion, defaultValue: "2014-02-14")
         let defaultContentLenght = version.compare("2014-02-13") == .orderedDescending ? "" : "0"
 
-        let array : [String] = [
+        let array: [String] = [
             method.string.uppercased(),
             headers.valueFor(name: .contentEncoding, defaultValue: ""),
             headers.valueFor(name: .contentLanguage, defaultValue: ""),
@@ -73,11 +73,11 @@ final class AzureSignatureService: ServiceType {
     ///
     /// - Parameter headers: Headers from request.
     /// - Returns: Canonicalized headers.
-    private func canonicalizedHeaders(headers : HTTPHeaders) -> String {
+    private func canonicalizedHeaders(headers: HTTPHeaders) -> String {
 
-        var microsoftHeaders = [String:String]()
+        var microsoftHeaders = [String: String]()
         headers.enumerated().forEach { header in
-            if (header.element.name.starts(with: "x-ms-")) {
+            if header.element.name.starts(with: "x-ms-") {
                 microsoftHeaders[header.element.name] = header.element.value
             }
         }
@@ -103,7 +103,7 @@ final class AzureSignatureService: ServiceType {
     /// - Parameter accountName: Azure storage account name.
     /// - Parameter uri: URI from path request.
     /// - Returns: Canonicalized resources.
-    private func canonicalizedResource(accountName: String, uri : String) throws -> String {
+    private func canonicalizedResource(accountName: String, uri: String) throws -> String {
         let url = URL(string: uri)
         var resource = "/" + accountName
 
@@ -111,7 +111,7 @@ final class AzureSignatureService: ServiceType {
             throw AzureStorageError.invalidUri
         }
 
-        resource = resource + "/" + unwrappedUrl.path
+        resource += "/" + unwrappedUrl.path
 
         var array = unwrappedUrl.queryParameters.map { (key, value) in
             return (key.lowercased(), value)
