@@ -49,7 +49,8 @@ private func registerMiddlewares(services: inout Services) {
     let corsConfiguration = CORSMiddleware.Configuration(
         allowedOrigin: .all,
         allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
-        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin]
+        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin],
+        allowCredentials: true
     )
     let corsMiddleware = CORSMiddleware(configuration: corsConfiguration)
     middlewares.use(corsMiddleware)

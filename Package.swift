@@ -14,7 +14,7 @@ let package = Package(
         .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", from: "0.3.1"),
 
         // 🐞 Custom error middleware for Vapor.
-        .package(url: "https://github.com/Letterer/ExtendedError.git", from: "1.0.0")
+        .package(url: "https://github.com/Mikroservices/ExtendedError.git", from: "1.0.0")
     ],
     targets: [
         .target(name: "App", dependencies: ["Vapor", "JWT", "XMLCoder", "ExtendedError"]),
