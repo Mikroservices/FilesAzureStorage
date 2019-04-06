@@ -50,8 +50,8 @@ final class AzureStorageService: ServiceType {
     /// - Parameter fromContainer: Container name.
     /// - Parameter inRequest: Current request scope.
     /// - Returns: List of files.
-    public func getFiles(fromContainer containerName: String, inRequest request: Request) throws -> Future<[FileDto]> {
-        return try self.getFilesInternal(fromContainer: containerName, inRequest: request)
+    public func getFiles(fromContainer containerName: String, groupName: String = "", inRequest request: Request) throws -> Future<[FileDto]> {
+        return try self.getFilesInternal(fromContainer: containerName, withPrefix: groupName, inRequest: request)
     }
 
     /// Returns list of files from container.

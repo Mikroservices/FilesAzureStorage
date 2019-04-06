@@ -21,9 +21,18 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 }
 
 private func registerSettingsStorage(services: inout Services) throws {
-    guard let publicKey = Environment.get("LETTERER_PUBLIC_KEY") else { throw Abort(.internalServerError) }
-    guard let azureStorageSecretKey = Environment.get("LETTERER_AZURE_STORAGE_SECRET_KEY") else { throw Abort(.internalServerError) }
-    guard let azureStorageAccountName = Environment.get("LETTERER_AZURE_STORAGE_ACCOUNT_NAME") else { throw Abort(.internalServerError) }
+
+    guard let publicKey = Environment.get("MIKROSERVICE_JWT_PUBLIC_KEY") else {
+        throw Abort(.internalServerError)
+    }
+
+    guard let azureStorageSecretKey = Environment.get("MIKROSERVICE_AZURE_STORAGE_SECRET_KEY") else {
+        throw Abort(.internalServerError)
+    }
+
+    guard let azureStorageAccountName = Environment.get("MIKROSERVICE_AZURE_STORAGE_ACCOUNT_NAME") else {
+        throw Abort(.internalServerError)
+    }
 
     services.register { _ -> SettingsStorage in
         let publicKeyWithNewLines = publicKey.replacingOccurrences(of: "<br>", with: "\n")

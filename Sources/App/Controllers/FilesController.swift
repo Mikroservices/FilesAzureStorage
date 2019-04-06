@@ -5,12 +5,13 @@ import XMLCoder
 final class FilesController: RouteCollection {
 
     func boot(router: Router) throws {
-        router.get("/files", use: files)
-        router.get("/files", String.parameter, use: file)
-        router.post(UploadFileDto.self, at: "/files", use: create)
+        router.get("/files", use: allfiles)
+        router.get("/files", String.parameter, use: filesFromGroup)
+        router.get("/files", String.parameter, String.parameter, use: file)
+        router.post(UploadFileDto.self, at: "/files", String.parameter, use: create)
     }
 
-    func files(request: Request) throws -> Future<[FileDto]> {
+    func allfiles(request: Request) throws -> Future<[FileDto]> {
 
         let authorizationService = try request.make(AuthorizationService.self)
         guard let userNameFromToken = try authorizationService.getUserNameFromBearerToken(request: request) else {
@@ -22,6 +23,20 @@ final class FilesController: RouteCollection {
         return try azureStorageService.getFiles(fromContainer: userNameNormalized, inRequest: request)
     }
 
+    func filesFromGroup(request: Request) throws -> Future<[FileDto]> {
+
+        let authorizationService = try request.make(AuthorizationService.self)
+        guard let userNameFromToken = try authorizationService.getUserNameFromBearerToken(request: request) else {
+            throw Abort(.unauthorized)
+        }
+
+        let groupName = try request.parameters.next(String.self)
+
+        let userNameNormalized = userNameFromToken.lowercased()
+        let azureStorageService = try request.make(AzureStorageService.self)
+        return try azureStorageService.getFiles(fromContainer: userNameNormalized, groupName: groupName, inRequest: request)
+    }
+
     func file(request: Request) throws -> Future<Response> {
 
         let authorizationService = try request.make(AuthorizationService.self)
@@ -29,13 +44,14 @@ final class FilesController: RouteCollection {
             throw Abort(.unauthorized)
         }
 
-        let fileName = try request.parameters.next(String.self)
+        let groupName = try request.parameters.next(String.self)
+        let fileId = try request.parameters.next(String.self)
 
         let userNameNormalized = userNameFromToken.lowercased()
         let azureStorageService = try request.make(AzureStorageService.self)
 
         return try azureStorageService.getFile(fromContainer: userNameNormalized,
-                                               withFileName: fileName,
+                                               withFileName: "\(groupName)/\(fileId)",
                                                inRequest: request).flatMap(to: Response.self) { fileDto in
 
             guard let fileDtoUnboxed = fileDto else {
@@ -53,23 +69,26 @@ final class FilesController: RouteCollection {
             throw Abort(.unauthorized)
         }
 
+        let groupName = try request.parameters.next(String.self)
+
         let azureStorageService = try request.make(AzureStorageService.self)
         let userNameNormalized = userNameFromToken.lowercased()
         let fileToken = TokenGenerator.generate()
         let fileId = "\(fileToken).\(uploadFileDto.file.ext ?? "unknown")"
         let metadata = ["fileName": uploadFileDto.file.filename]
+        let fullName = "\(groupName)/\(fileId)"
 
         return try request.content.decode(UploadFileDto.self).flatMap(to: HTTPStatus.self) { uploadFileDto in
             return try azureStorageService.createFile(inContainer: userNameNormalized,
                                                       content: uploadFileDto.file.data,
-                                                      fileName: fileId,
+                                                      fileName: fullName,
                                                       contentType: uploadFileDto.file.contentType,
                                                       withMetadata: metadata,
                                                       inRequest: request)
 
         }.flatMap(to: FileDto?.self) { azureStotageStatus in
             if azureStotageStatus.isSuccess() {
-                return try azureStorageService.getFile(fromContainer: userNameNormalized, withFileName: fileId, inRequest: request)
+                return try azureStorageService.getFile(fromContainer: userNameNormalized, withFileName: fullName, inRequest: request)
             }
 
             throw AzureStorageError.fileNotCreated
