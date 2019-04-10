@@ -49,7 +49,7 @@ Service provides simple RESTful API. Below there is a description of each endpoi
 - [`POST /files`](Docs/files/create.md) - create new file
 - [`GET /files`](Docs/files/get-all.md) - get all user files
 - [`GET /files/{groupName}`](Docs/files/get-all-from-group.md) - get all user files from specific group
-- [`/files/{groupName}/{fileName}`](Docs/files/get-file.md) - get file data
+- [`GET /files/{groupName}/{fileName}`](Docs/files/get-file.md) - get file data
 
 ## Downloading file content
 
